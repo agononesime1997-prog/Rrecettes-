@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123b35">
+<title>Recettes Chauffeurs</title>
+<style>
+:root{--green:#123b35;--green2:#1f6658;--bg:#f3f6f5;--card:#fff;--text:#182523;--muted:#63716e;--line:#dce5e2;--red:#b42318}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--text)}
+header{background:var(--green);color:white;padding:22px 18px 18px}header h1{font-size:22px;margin:0 0 5px}header p{margin:0;color:#d6e8e3;font-size:13px}
+main{max-width:720px;margin:0 auto;padding:14px 12px 90px}.tabs{display:flex;gap:6px;background:#e4ece9;padding:5px;border-radius:13px;margin-bottom:14px;position:sticky;top:0;z-index:5}
+.tabs button{flex:1;border:0;border-radius:9px;padding:11px 5px;font-weight:700;background:transparent;color:#43534f;font-size:13px}.tabs button.active{background:white;color:var(--green);box-shadow:0 1px 4px #0001}
+.panel{display:none}.panel.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;margin-bottom:13px;box-shadow:0 2px 7px #142a2510}
+h2{font-size:17px;margin:0 0 13px}h3{font-size:14px;margin:0 0 8px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.field{margin-bottom:11px}.field:last-child{margin-bottom:0}label{display:block;font-size:12px;font-weight:700;color:#53625e;margin-bottom:5px}
+input,select{width:100%;min-width:0;padding:12px;border:1px solid #cbd8d4;border-radius:10px;background:white;color:var(--text);font:inherit;font-size:15px}input:focus,select:focus{outline:2px solid #80b8a9;border-color:var(--green2)}
+button.primary,button.secondary,button.danger{border:0;border-radius:10px;padding:12px 14px;font-weight:750;font-size:14px;cursor:pointer}
+.primary{background:var(--green);color:white;width:100%}.secondary{background:#e5efeb;color:var(--green)}.danger{background:#fff0ef;color:var(--red)}
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:13px}.metric{background:#fff;border:1px solid var(--line);border-radius:13px;padding:13px}.metric span{display:block;color:var(--muted);font-size:12px}.metric strong{display:block;font-size:19px;margin-top:5px;overflow-wrap:anywhere}
+.calc{background:#edf6f2;border-radius:11px;padding:12px;margin:8px 0 13px}.calc div{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:13px}.calc .total{border-top:1px solid #c9ded6;margin-top:5px;padding-top:9px;font-weight:800;font-size:16px}
+.small{font-size:12px;color:var(--muted);line-height:1.45}.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:9px;background:#fff}.item-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.item strong{font-size:14px}.item p{font-size:12px;color:var(--muted);margin:5px 0}.item .amount{font-size:16px;font-weight:800;color:var(--green)}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.actions button{padding:8px 10px;font-size:12px}
+.empty{text-align:center;padding:22px;color:var(--muted);font-size:13px}
+.table-wrap{overflow:auto;width:100%;border:1px solid var(--line);border-radius:10px;margin-top:12px}
+table.sheet{border-collapse:collapse;width:100%;min-width:900px;background:#fff;font-size:12px}
+.sheet th,.sheet td{border:1px solid #d7e0dc;padding:9px 8px;text-align:right;white-space:nowrap}
+.sheet th{background:#e6efeb;color:#183d35;font-weight:800;text-align:center;position:sticky;top:0}
+.sheet th:first-child,.sheet td:first-child,.sheet th:nth-child(2),.sheet td:nth-child(2){text-align:left}
+.sheet tfoot td{font-weight:800;background:#f0f5f3}
+.expiry{background:#fff8e8;border:1px solid #f0dfb4;border-radius:10px;padding:12px;margin-top:12px}
+.expiry strong{display:block;margin-top:5px}
+.note{background:#fff8e8;border:1px solid #f0dfb4;border-radius:11px;padding:11px;font-size:12px;color:#72551c;margin-bottom:12px}
+@media(max-width:380px){.grid{grid-template-columns:1fr}.tabs button{font-size:12px;padding:10px 2px}.metric strong{font-size:17px}}
+</style>
+</head>
+<body>
+<header><h1>🚕 Recettes Chauffeurs</h1><p>Suivi quotidien des recettes, prêts, dépenses et véhicules</p></header>
+<main>
+<div class="tabs" role="tablist">
+<button class="active" data-tab="saisie">✍️ Saisie</button>
+<button data-tab="historique">📋 Historique</button>
+<button data-tab="vehicules">🚘 Véhicules</button>
+</div>
+
+<section id="saisie" class="panel active">
+<div class="summary">
+<div class="metric"><span>Recettes du jour</span><strong id="todayRevenue">0 FCFA</strong></div>
+<div class="metric"><span>Soldes du jour</span><strong id="todayBalance">0 FCFA</strong></div>
+</div>
+<div class="card">
+<h2>Nouvelle recette journalière</h2>
+<form id="entryForm">
+<div class="grid">
+<div class="field"><label for="date">Date</label><input id="date" type="date" required></div>
+<div class="field"><label for="vehicle">Véhicule</label><select id="vehicle"><option value="">Choisir un véhicule</option></select></div>
+</div>
+<div class="field"><label for="driver">Nom du chauffeur</label><input id="driver" placeholder="Ex. : Jean" required></div>
+<div class="grid">
+<div class="field"><label for="revenue">Recette du jour (FCFA)</label><input id="revenue" type="number" min="0" step="1" placeholder="Ex. : 15000" required></div>
+<div class="field"><label for="percent">Pourcentage (%)</label><input id="percent" type="number" min="0" max="100" step="0.1" value="25" required></div>
+</div>
+<div class="grid">
+<div class="field"><label for="loan">Prêt / avance (FCFA)</label><input id="loan" type="number" min="0" step="1" value="0" required></div>
+<div class="field"><label for="expenses">Dépenses (FCFA)</label><input id="expenses" type="number" min="0" step="1" value="0" required></div>
+</div>
+<div class="calc" aria-live="polite">
+<div><span>Montant du pourcentage</span><strong id="percentAmount">0 FCFA</strong></div>
+<div><span>Recette après pourcentage</span><strong id="afterPercent">0 FCFA</strong></div>
+<div class="total"><span>Solde calculé</span><strong id="balance">0 FCFA</strong></div>
+</div>
+<div class="field"><label for="comment">Note (facultatif)</label><input id="comment" placeholder="Ex. : réparation, carburant…"></div>
+<button class="primary" type="submit">Enregistrer la recette</button>
+<p class="small">Calcul utilisé : recette − part du chauffeur (25 %) − prêt − dépenses.</p>
+</form>
+</div>
+<div class="note">Les données sont enregistrées dans le stockage de ce navigateur sur ce téléphone. Évite d'effacer les données du navigateur si tu veux les conserver.</div>
+</section>
+
+<section id="historique" class="panel">
+<div class="card">
+<h2>Historique par véhicule — tableau</h2>
+<div class="field"><label for="filterVehicle">Sélectionner un véhicule</label><select id="filterVehicle"><option value="">Choisir un véhicule</option></select></div>
+<div class="field"><label for="filterDate">Filtrer par date (facultatif)</label><input id="filterDate" type="date"></div>
+<div id="vehicleExpiryBox" class="expiry"><label for="expiryDate">Date d’expiration Veritaxe du véhicule sélectionné</label><input id="expiryDate" type="date"><button class="secondary" id="saveExpiry" type="button" style="margin-top:8px">Enregistrer la date Veritaxe</button><strong id="expiryDisplay">Sélectionne un véhicule.</strong></div>
+<div class="summary" style="margin-top:13px">
+<div class="metric"><span>Total des recettes</span><strong id="histRevenue">0 FCFA</strong></div>
+<div class="metric"><span>Total part chauffeur (25 %)</span><strong id="histPercent">0 FCFA</strong></div>
+<div class="metric"><span>Total des prêts</span><strong id="histLoans">0 FCFA</strong></div>
+<div class="metric"><span>Total des dépenses</span><strong id="histExpenses">0 FCFA</strong></div>
+</div>
+<div class="table-wrap">
+<table class="sheet">
+<thead><tr><th>Date</th><th>Chauffeur</th><th>Recette (FCFA)</th><th>Part chauffeur (25 %)</th><th>Prêt (FCFA)</th><th>Dépenses (FCFA)</th><th>Solde (FCFA)</th></tr></thead>
+<tbody id="sheetBody"><tr><td colspan="7" style="text-align:center">Sélectionne un véhicule pour afficher son historique.</td></tr></tbody>
+<tfoot id="sheetFoot"><tr><td colspan="2">TOTAL</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr></tfoot>
+</table>
+</div>
+<p class="small">Le tableau se défile horizontalement sur téléphone, comme une feuille de calcul. La part du chauffeur est calculée à 25 % des recettes. Le solde restant est calculé après déduction de cette part, des prêts et des dépenses.</p>
+<div class="actions"><button class="secondary" id="exportCsv" type="button">Exporter le tableau en CSV</button></div>
+<div id="entriesList" style="display:none"></div>
+</div>
+</section>
+
+<section id="vehicules" class="panel">
+<div class="card">
+<h2>Ajouter un véhicule</h2>
+<form id="vehicleForm">
+<div class="grid">
+<div class="field"><label for="vehicleName">Nom / modèle</label><input id="vehicleName" placeholder="Ex. : Toyota Corolla" required></div>
+<div class="field"><label for="plate">Immatriculation</label><input id="plate" placeholder="Ex. : 123 AB 4"></div>
+</div>
+<button class="primary" type="submit">Ajouter le véhicule</button>
+</form>
+</div>
+<div class="card"><h2>Mes véhicules</h2><div id="vehiclesList"></div></div>
+<div class="card">
+<h2>Sauvegarde des données</h2>
+<p class="small">Pour garder une copie, exporte régulièrement l'historique en CSV. Le fichier peut s'ouvrir dans Excel ou un tableur compatible.</p>
+<button class="secondary" id="backupJson" type="button">Télécharger une sauvegarde complète</button>
+</div>
+</section>
+</main>
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const money=n=>Math.round((Number(n)||0)).toLocaleString('fr-FR')+' FCFA';
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+let entries=[],vehicles=[];
+try{entries=JSON.parse(localStorage.getItem('rc_entries_v1')||'[]')}catch(e){entries=[]}
+try{vehicles=JSON.parse(localStorage.getItem('rc_vehicles_v1')||'[]')}catch(e){vehicles=[]}
+function save(){localStorage.setItem('rc_entries_v1',JSON.stringify(entries));localStorage.setItem('rc_vehicles_v1',JSON.stringify(vehicles))}
+function calc(){const r=Number($('revenue').value)||0,p=Number($('percent').value)||0,l=Number($('loan').value)||0,e=Number($('expenses').value)||0;const pa=r*p/100,b=r-pa-l-e;$('percentAmount').textContent=money(pa);$('afterPercent').textContent=money(r-pa);$('balance').textContent=money(b)}
+['revenue','percent','loan','expenses'].forEach(id=>$(id).addEventListener('input',calc));
+$('date').value=today();
+function renderVehicleSelects(){
+ const v=$('vehicle'),f=$('filterVehicle'),old=v.value,oldf=f.value;
+ v.innerHTML='<option value="">Choisir un véhicule</option>';f.innerHTML='<option value="">Choisir un véhicule</option>';
+ vehicles.forEach(x=>{const label=x.name+(x.plate?' — '+x.plate:'');v.add(new Option(label,x.id));f.add(new Option(label,x.id))});
+ if(vehicles.some(x=>x.id===old))v.value=old;if(vehicles.some(x=>x.id===oldf))f.value=oldf;
+}
+function renderVehicles(){
+ $('vehiclesList').innerHTML='';
+ if(!vehicles.length){$('vehiclesList').innerHTML='<div class="empty">Aucun véhicule ajouté pour le moment.</div>';return}
+ vehicles.forEach(v=>{
+  const count=entries.filter(e=>e.vehicleId===v.id).length;
+  const div=document.createElement('div');div.className='item';
+  div.innerHTML='<div class="item-top"><div><strong></strong><p></p><p></p></div><button class="danger" type="button">Supprimer</button></div>';
+  div.querySelector('strong').textContent=v.name;
+  div.querySelectorAll('p')[0].textContent=v.plate?'Immatriculation : '+v.plate:'Aucune immatriculation';
+  div.querySelectorAll('p')[1].textContent=count+' recette(s) enregistrée(s)'+(v.expiry?' · Veritaxe : '+v.expiry:'');
+  div.querySelector('button').onclick=()=>{if(entries.some(e=>e.vehicleId===v.id)){alert('Ce véhicule est utilisé dans l’historique. Supprime d’abord ses recettes si tu veux le retirer.');return}if(confirm('Supprimer ce véhicule ?')){vehicles=vehicles.filter(x=>x.id!==v.id);save();renderAll()}};
+  $('vehiclesList').appendChild(div);
+ });
+}
+function renderEntries(){
+ const date=$('filterDate').value,vid=$('filterVehicle').value;
+ const selectedVehicle=vehicles.find(x=>x.id===vid);
+ const list=entries.filter(e=>(!date||e.date===date)&&(!vid||e.vehicleId===vid)).sort((a,b)=>a.date.localeCompare(b.date)||a.createdAt-b.createdAt);
+ const sum=(key)=>list.reduce((s,e)=>s+(Number(e[key])||0),0);
+ const totalRevenue=sum('revenue'), totalPercent=list.reduce((s,e)=>s+(Number(e.revenue)||0)*0.25,0), totalLoans=sum('loan'), totalExpenses=sum('expenses');
+ $('histRevenue').textContent=money(totalRevenue);
+ $('histPercent').textContent=money(totalPercent);
+ $('histLoans').textContent=money(totalLoans);
+ $('histExpenses').textContent=money(totalExpenses);
+ $('sheetBody').innerHTML='';
+ if(!vid){
+   $('sheetBody').innerHTML='<tr><td colspan="7" style="text-align:center">Sélectionne un véhicule pour afficher son historique.</td></tr>';
+ }else if(!list.length){
+   $('sheetBody').innerHTML='<tr><td colspan="7" style="text-align:center">Aucune recette enregistrée pour ce véhicule avec ce filtre.</td></tr>';
+ }else{
+   list.forEach(e=>{
+     const tr=document.createElement('tr');
+     const vals=[e.date,e.driver,money(e.revenue),money((Number(e.revenue)||0)*0.25),money(e.loan),money(e.expenses),money((Number(e.revenue)||0)-(Number(e.revenue)||0)*0.25-(Number(e.loan)||0)-(Number(e.expenses)||0))];
+     vals.forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;if(i===2||i===6)td.style.fontWeight='700';tr.appendChild(td)});
+     $('sheetBody').appendChild(tr);
+   });
+ }
+ const foot=$('sheetFoot');foot.innerHTML='';
+ const row=document.createElement('tr');
+ ['TOTAL','',money(totalRevenue),money(totalPercent),money(totalLoans),money(totalExpenses),money(totalRevenue-totalPercent-totalLoans-totalExpenses)].forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;if(i===0)td.colSpan=2;else if(i===1)return;row.appendChild(td)});
+ foot.appendChild(row);
+ $('expiryDate').value=selectedVehicle&&selectedVehicle.expiry?selectedVehicle.expiry:'';
+ $('expiryDisplay').textContent=selectedVehicle?(selectedVehicle.expiry?'Expiration Veritaxe : '+selectedVehicle.expiry:'Aucune date Veritaxe enregistrée pour ce véhicule.'):'Sélectionne un véhicule.';
+}
+function renderToday(){
+ const list=entries.filter(e=>e.date===today());
+ $('todayRevenue').textContent=money(list.reduce((s,e)=>s+e.revenue,0));
+ $('todayBalance').textContent=money(list.reduce((s,e)=>s+e.balance,0));
+}
+function renderAll(){renderVehicleSelects();renderVehicles();renderEntries();renderToday()}
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>{
+ document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b===btn));
+ document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.tab));
+}));
+$('vehicleForm').addEventListener('submit',e=>{e.preventDefault();const name=$('vehicleName').value.trim();if(!name)return;vehicles.push({id:'v'+Date.now()+Math.random().toString(16).slice(2,6),name,plate:$('plate').value.trim(),expiry:''});save();$('vehicleForm').reset();renderAll();alert('Véhicule ajouté.')});
+$('entryForm').addEventListener('submit',e=>{
+ e.preventDefault();const revenue=Number($('revenue').value),percent=Number($('percent').value),loan=Number($('loan').value)||0,expenses=Number($('expenses').value)||0;
+ if(revenue<0||percent<0||percent>100||loan<0||expenses<0){alert('Vérifie les montants et le pourcentage.');return}
+ const pa=revenue*percent/100;
+ entries.push({id:'e'+Date.now()+Math.random().toString(16).slice(2,6),createdAt:Date.now(),date:$('date').value,vehicleId:$('vehicle').value,driver:$('driver').value.trim(),revenue,percent,percentAmount:pa,loan,expenses,balance:revenue-pa-loan-expenses,comment:$('comment').value.trim()});
+ save();$('entryForm').reset();$('date').value=today();$('percent').value='25';$('loan').value='0';$('expenses').value='0';calc();renderAll();alert('Recette enregistrée.');
+});
+$('filterDate').addEventListener('change',renderEntries);$('filterVehicle').addEventListener('change',renderEntries);
+$('saveExpiry').onclick=()=>{const v=vehicles.find(x=>x.id===$('filterVehicle').value);if(!v){alert('Sélectionne d’abord un véhicule.');return}v.expiry=$('expiryDate').value;save();renderEntries();renderVehicles();alert('Date Veritaxe enregistrée.')};
+function download(name,content,type){const blob=new Blob([content],{type});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('exportCsv').onclick=()=>{
+ const vid=$('filterVehicle').value,date=$('filterDate').value;
+ if(!vid){alert('Sélectionne un véhicule avant d’exporter son tableau.');return}
+ const v=vehicles.find(x=>x.id===vid);
+ const selected=entries.filter(e=>e.vehicleId===vid&&(!date||e.date===date)).sort((a,b)=>a.date.localeCompare(b.date));
+ const rows=[['Véhicule',v?v.name:'','Immatriculation',v?v.plate:'','Expiration Veritaxe',v?v.expiry||'Non renseignée':''],[],['Date','Chauffeur','Recette FCFA','Part chauffeur 25% FCFA','Prêt FCFA','Dépenses FCFA','Solde FCFA']];
+ selected.forEach(e=>rows.push([e.date,e.driver,e.revenue,e.revenue*0.25,e.loan,e.expenses,e.revenue-e.revenue*0.25-e.loan-e.expenses]));
+ rows.push(['TOTAL','',selected.reduce((s,e)=>s+e.revenue,0),selected.reduce((s,e)=>s+e.revenue*0.25,0),selected.reduce((s,e)=>s+e.loan,0),selected.reduce((s,e)=>s+e.expenses,0),selected.reduce((s,e)=>s+e.revenue*0.75-e.loan-e.expenses,0)]);
+ const csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x??'').replace(/"/g,'""')+'"').join(';')).join('\r\n');download('historique_'+(v?v.name:'vehicule').replace(/[^a-z0-9_-]/gi,'_')+'.csv',csv,'text/csv;charset=utf-8');
+};
+$('backupJson').onclick=()=>download('sauvegarde_recettes_chauffeurs.json',JSON.stringify({exportedAt:new Date().toISOString(),vehicles,entries},null,2),'application/json;charset=utf-8');
+renderAll();calc();
+})();
+</script>
+</body>
+</html>
